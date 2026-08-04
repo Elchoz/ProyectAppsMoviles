@@ -1,9 +1,9 @@
 package com.example.medicontrol;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
@@ -19,35 +19,53 @@ public class MainActivity extends AppCompatActivity {
     private TextView tvTomasPendientes, tvTomasCompletadas, tvProximaToma;
     private RecyclerView rvMedicamentos;
     private FloatingActionButton fabAgregarMedicamento;
+    private ImageButton btnAjustes;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // 1. Aplicar la preferencia de tema guardada antes de crear la vista
+        ThemeHelper.aplicarTema(this);
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // 2. Vincular componentes de la interfaz
         tvTomasPendientes = findViewById(R.id.tvTomasPendientes);
         tvTomasCompletadas = findViewById(R.id.tvTomasCompletadas);
         tvProximaToma = findViewById(R.id.tvProximaToma);
         rvMedicamentos = findViewById(R.id.rvMedicamentos);
         fabAgregarMedicamento = findViewById(R.id.fabAgregarMedicamento);
+        btnAjustes = findViewById(R.id.btnAjustes);
 
-        rvMedicamentos.setLayoutManager(new LinearLayoutManager(this));
-
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-            if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 101);
-            }
+        if (rvMedicamentos != null) {
+            rvMedicamentos.setLayoutManager(new LinearLayoutManager(this));
         }
 
-        fabAgregarMedicamento.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, RegistroMedicamentoActivity.class);
-            startActivity(intent);
-        });
+        // 3. Asignar listener al botón de Ajustes (⚙️)
+        if (btnAjustes != null) {
+            btnAjustes.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mostrarDialogoAjustes();
+                }
+            });
+        }
 
-        tvTomasPendientes.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, HistorialActivity.class);
-            startActivity(intent);
-        });
+        // 4. Evento para ir al formulario de registro
+        if (fabAgregarMedicamento != null) {
+            fabAgregarMedicamento.setOnClickListener(v -> {
+                Intent intent = new Intent(MainActivity.this, RegistroMedicamentoActivity.class);
+                startActivity(intent);
+            });
+        }
+
+        // 5. Evento para ir a la pantalla de Historial
+        if (tvTomasPendientes != null) {
+            tvTomasPendientes.setOnClickListener(v -> {
+                Intent intent = new Intent(MainActivity.this, HistorialActivity.class);
+                startActivity(intent);
+            });
+        }
     }
 
     @Override
@@ -57,7 +75,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void cargarDatosDesdeSQLite() {
-        // Solo obtener medicamentos marcados como activos
         List<Medicamento> listaMedicamentos = AppDatabase.getInstance(this)
                 .medicamentoDao()
                 .obtenerActivos();
@@ -81,15 +98,24 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        rvMedicamentos.setAdapter(adapter);
+        if (rvMedicamentos != null) {
+            rvMedicamentos.setAdapter(adapter);
+        }
 
-        tvTomasPendientes.setText("Registrados: " + listaMedicamentos.size());
-        tvTomasCompletadas.setText("Tomadas: 0");
+        if (tvTomasPendientes != null) {
+            tvTomasPendientes.setText("Registrados: " + listaMedicamentos.size());
+        }
 
-        if (!listaMedicamentos.isEmpty()) {
-            tvProximaToma.setText("Próxima:\n" + listaMedicamentos.get(0).getHora());
-        } else {
-            tvProximaToma.setText("Próxima:\n--:--");
+        if (tvTomasCompletadas != null) {
+            tvTomasCompletadas.setText("Tomadas: 0");
+        }
+
+        if (tvProximaToma != null) {
+            if (!listaMedicamentos.isEmpty()) {
+                tvProximaToma.setText("Próxima:\n" + listaMedicamentos.get(0).getHora());
+            } else {
+                tvProximaToma.setText("Próxima:\n--:--");
+            }
         }
     }
 
@@ -98,7 +124,6 @@ public class MainActivity extends AppCompatActivity {
                 .setTitle("Desactivar Medicamento")
                 .setMessage("¿Deseas quitar \"" + medicamento.getNombre() + "\" de los activos? Seguirá guardado en tu historial.")
                 .setPositiveButton("Quitar", (dialog, which) -> {
-                    // Marcamos como inactivo en lugar de borrarlo físicamente
                     medicamento.setActivo(false);
                     AppDatabase.getInstance(MainActivity.this)
                             .medicamentoDao()
@@ -106,6 +131,32 @@ public class MainActivity extends AppCompatActivity {
 
                     Toast.makeText(MainActivity.this, "Guardado en Historial", Toast.LENGTH_SHORT).show();
                     cargarDatosDesdeSQLite();
+                })
+                .setNegativeButton("Cancelar", null)
+                .show();
+    }
+
+    // 🎨 Diálogo de selección de Tema (Claro / Oscuro) - CORREGIDO
+    private void mostrarDialogoAjustes() {
+        boolean isDarkModeActual = ThemeHelper.obtenerPreferenciaTema(this);
+
+        String[] opciones = {"Modo Claro ☀️", "Modo Oscuro 🌙"};
+        int seleccionInicial = isDarkModeActual ? 1 : 0;
+
+        new AlertDialog.Builder(this)
+                .setTitle("Configuración de Tema")
+                .setSingleChoiceItems(opciones, seleccionInicial, (dialog, which) -> {
+                    boolean seleccionarModoOscuro = (which == 1);
+
+                    if (seleccionarModoOscuro != isDarkModeActual) {
+                        // 1. Ocultar el diálogo primero para evitar conflictos de vista
+                        dialog.dismiss();
+
+                        // 2. Guardar y cambiar el modo (Android recreará la vista automáticamente)
+                        ThemeHelper.guardarTema(MainActivity.this, seleccionarModoOscuro);
+                    } else {
+                        dialog.dismiss();
+                    }
                 })
                 .setNegativeButton("Cancelar", null)
                 .show();

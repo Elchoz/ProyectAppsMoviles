@@ -10,6 +10,7 @@ public class SplashActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        ThemeHelper.aplicarTema(this);
         super.onCreate(savedInstanceState);
         // Debe coincidir con el nombre de tu archivo XML azul
         setContentView(R.layout.activity_splash);

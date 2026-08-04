@@ -1,29 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://tools.tools.org/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="?android:attr/colorBackground"
     android:orientation="vertical"
     android:padding="16dp"
     tools:context=".MainActivity">
 
-    <!-- Encabezado / Título del Panel -->
-    <TextView
-        android:id="@+id/tvBienvenida"
+    <!-- Encabezado / Título del Panel + Botón de Ajustes (⚙️) con Espaciado -->
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="MediControl - Panel Diario"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:textColor="@color/black"
-        android:layout_marginBottom="16dp"/>
+        android:layout_marginBottom="16dp">
 
-    <!-- Tarjeta de Resumen Diario (RF-11) -->
+        <TextView
+            android:id="@+id/tvBienvenida"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:layout_toStartOf="@id/btnAjustes"
+            android:layout_marginEnd="12dp"
+            android:text="MediControl - Panel Diario"
+            android:textColor="?android:attr/textColorPrimary"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <!-- ⚙️ BOTÓN DE AJUSTES DE TEMA (Con tinte adaptable) -->
+        <ImageButton
+            android:id="@+id/btnAjustes"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:padding="8dp"
+            android:background="?android:attr/selectableItemBackground"
+            android:contentDescription="Ajustes de Tema"
+            android:src="@android:drawable/ic_menu_preferences"
+            app:tint="?android:attr/textColorPrimary" />
+    </RelativeLayout>
+
+    <!-- Tarjeta de Resumen Diario (RF-11) adaptable a Modo Oscuro -->
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
+        app:cardBackgroundColor="?android:attr/colorBackground"
         app:cardCornerRadius="12dp"
         app:cardElevation="4dp">
 
@@ -36,10 +60,11 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
                 android:text="Resumen de Hoy"
-                android:textStyle="bold"
+                android:textColor="?android:attr/textColorPrimary"
                 android:textSize="16sp"
-                android:layout_marginBottom="8dp"/>
+                android:textStyle="bold" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -53,7 +78,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="Pendientes: 0"
-                    android:textColor="#FF9800"/>
+                    android:textColor="?android:attr/textColorSecondary" />
 
                 <TextView
                     android:id="@+id/tvTomasCompletadas"
@@ -61,7 +86,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="Tomadas: 0"
-                    android:textColor="#4CAF50"/>
+                    android:textColor="?android:attr/textColorSecondary" />
 
                 <TextView
                     android:id="@+id/tvProximaToma"
@@ -69,7 +94,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="Próxima: --:--"
-                    android:textColor="#2196F3"/>
+                    android:textColor="?android:attr/textColorSecondary" />
             </LinearLayout>
         </LinearLayout>
     </androidx.cardview.widget.CardView>
@@ -78,10 +103,11 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
         android:text="Medicamentos Activos"
-        android:textStyle="bold"
+        android:textColor="?android:attr/textColorPrimary"
         android:textSize="18sp"
-        android:layout_marginBottom="8dp"/>
+        android:textStyle="bold" />
 
     <!-- Lista Dinámica de Medicamentos (RF-04) -->
     <androidx.recyclerview.widget.RecyclerView
@@ -89,7 +115,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        tools:listitem="@android:layout/simple_list_item_2"/>
+        tools:listitem="@android:layout/simple_list_item_2" />
 
     <!-- Botón Flotante para Registrar Nuevo Medicamento -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
